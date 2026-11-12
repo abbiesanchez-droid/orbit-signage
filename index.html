@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZipHealth · Chewable ED Production — Signage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* One 16:9 screen, no scroll. Brand band on top; below, a height-filling grid:
+     stock hero (3x2) on the left, production + weekly cadence on the right. The whole
+     board is a size container and every value is in cqw/cqh, so it scales to any
+     OptiSigns resolution and letterboxes (never clips) if the screen isn't exactly 16:9. */
+  :root{
+    color-scheme:light;
+    /* ZipHealth brand — sampled from ziphealth.co computed styles */
+    --navy:#003f82;          /* brand blue */
+    --navy-deep:#002a57;     /* darkest ink */
+    --ink:#0f2f4e;           /* body text */
+    --muted:#3f6089;         /* secondary — AA on white at >=14px */
+    --faint:#6d88a8;         /* decorative only, large sizes */
+    --accent:#fa6609;        /* ZipHealth signature orange */
+    --accent-ink:#c8500a;    /* orange as text — AA on white */
+    --accent-soft:#fdeadb; --accent-deep:#a8430a;
+    --zh:#2772db; --zh-ink:#1b5bb5; --zh-soft:#e6eefb;
+    --rrx:#e0182e; --rrx-ink:#b3121f; --rrx-soft:#fce7e9;
+    --good:#12813f; --good-ink:#0f6e36; --good-soft:#e2f3e9;
+
+    --bg:#e8eef7;
+    --card:#ffffff;
+    --card-2:#f3f7fc;
+    --line:#d4dfee;
+    --line-2:#e7eef7;
+    --band:#003f82;
+    --stage:#02162b;         /* letterbox backdrop */
+    --sans:"Roboto",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:var(--stage);color:var(--ink);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;overflow:hidden;
+    display:flex;align-items:center;justify-content:center}
+  .tnum{font-variant-numeric:tabular-nums}
+
+  /* The 16:9 board, sized to fit the viewport (contain) */
+  .screen{container-type:size;width:min(100vw,177.78vh);height:min(56.25vw,100vh);
+    background:var(--bg);color:var(--ink);overflow:hidden;
+    display:flex;flex-direction:column;line-height:1.3;font-feature-settings:"tnum" 1}
+  .screen h1,.screen h2,.screen h3{letter-spacing:-.015em;color:var(--navy);text-wrap:balance}
+
+  /* Brand band */
+  .band{flex:none;background:var(--band);color:#fff;border-bottom:.45cqw solid var(--accent);
+    display:flex;align-items:center;justify-content:space-between;gap:2cqw;padding:1.3cqw 2.3cqw}
+  .band-l{display:flex;flex-direction:column;gap:.5cqw;min-width:0}
+  .zh-logo{height:3.3cqw;width:auto;display:block;fill:currentColor;color:#fff}
+  .band-sub{font-size:1.15cqw;font-weight:500;color:rgba(255,255,255,.82);
+    text-transform:uppercase;letter-spacing:.09em}
+  .band-r{display:flex;flex-direction:column;align-items:flex-end;gap:.55cqw;text-align:right}
+  .clock{font-weight:900;font-size:3cqw;line-height:.95;letter-spacing:-.02em;color:#fff}
+  .band-status{display:inline-flex;align-items:center;gap:.7cqw;font-size:1.05cqw;font-weight:600;
+    color:rgba(255,255,255,.92);background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.18);padding:.4cqw 1cqw;border-radius:999px}
+  .pulse{width:.95cqw;height:.95cqw;border-radius:50%;background:rgba(255,255,255,.5);flex:none}
+  .pulse.live{background:#4ade80;box-shadow:0 0 0 .3cqw rgba(74,222,128,.25)}
+  .pulse.err{background:var(--accent);box-shadow:0 0 0 .3cqw rgba(250,102,9,.28)}
+  .pulse.loading{background:var(--accent);animation:bp 1.4s ease-in-out infinite}
+  @keyframes bp{0%,100%{opacity:.35}50%{opacity:1}}
+  .helios{font-size:.82cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+    color:rgba(255,255,255,.58)}
+
+  /* Body grid */
+  .body{flex:1;min-height:0;display:grid;grid-template-columns:1.62fr 1fr;gap:1.8cqw;
+    padding:1.7cqw 2.3cqw 2cqw}
+  .col{min-height:0;min-width:0}
+  .sechead{display:flex;align-items:baseline;gap:1cqw;flex-wrap:wrap}
+  .sechead h2{font-size:2cqw;font-weight:900;position:relative;padding-left:1.35cqw}
+  .sechead h2::before{content:"";position:absolute;left:0;top:.12em;bottom:.12em;width:.45cqw;
+    border-radius:.25cqw;background:var(--accent)}
+  .sechead h3{font-size:1.55cqw;font-weight:900}
+  .note{font-size:1.1cqw;color:var(--muted);font-weight:500}
+  .leg{margin-left:auto;display:flex;gap:.7cqw}
+  .lg{display:inline-flex;align-items:center;gap:.55cqw;font-size:1cqw;font-weight:700;color:var(--ink);
+    background:var(--card);border:1px solid var(--line);padding:.35cqw .9cqw;border-radius:999px}
+  .dot{width:1cqw;height:1cqw;border-radius:.3cqw;display:inline-block}
+  .dot.zh{background:var(--zh)} .dot.rrx{background:var(--rrx)}
+
+  /* Stock column */
+  .col-stock{display:grid;grid-template-rows:auto 1fr;gap:1.2cqw}
+  .stockgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);
+    gap:1.2cqw;min-height:0}
+  .card{min-height:0;min-width:0;background:var(--card);border:1px solid var(--line);
+    border-radius:1.1cqw;border-top:.5cqw solid var(--faint);padding:1.3cqw 1.45cqw 1.2cqw;
+    box-shadow:0 1px 2px rgba(5,40,80,.05),0 .9cqw 1.8cqw -1cqw rgba(5,40,80,.18);
+    display:flex;flex-direction:column;overflow:hidden}
+  .card.zh{border-top-color:var(--zh);--brand:var(--zh);--chip:var(--zh-ink)}
+  .card.rrx{border-top-color:var(--rrx);--brand:var(--rrx);--chip:var(--rrx-ink)}
+  .card.warn{border-top-color:var(--accent);background:linear-gradient(180deg,var(--accent-soft),transparent 40%),var(--card)}
+  .card.idle{border-top-color:var(--line)}
+  .chead{display:flex;align-items:center;justify-content:space-between;gap:.8cqw}
+  .chip{display:inline-flex;align-items:center;white-space:nowrap;font-size:1.05cqw;font-weight:900;letter-spacing:.02em;
+    text-transform:uppercase;padding:.35cqw .95cqw;border-radius:999px;color:#fff;background:var(--chip,var(--faint))}
+  .status{display:inline-flex;align-items:center;gap:.4cqw;font-size:1cqw;font-weight:800;
+    padding:.35cqw .9cqw;border-radius:999px;white-space:nowrap}
+  .status.good{color:var(--good-ink);background:var(--good-soft)}
+  .status.warn{color:#fff;background:var(--accent-deep)}
+  .status.idle{color:var(--muted);background:var(--card-2)}
+  .bignum{display:flex;align-items:flex-end;gap:.7cqw;margin-top:.9cqw}
+  .bignum .n{font-weight:900;font-size:4.7cqw;line-height:.9;letter-spacing:-.03em;color:var(--navy-deep)}
+  .card.warn .bignum .n{color:var(--accent-ink)}
+  .bignum .u{font-size:1.1cqw;color:var(--muted);font-weight:700;padding-bottom:.6cqw}
+  .csub{font-size:1.05cqw;color:var(--muted);font-weight:500;margin-top:.3cqw}
+  .bar{position:relative;height:.9cqw;border-radius:999px;background:var(--line-2);margin:2.4cqw 0 .3cqw}
+  .bar .fill{position:absolute;inset:0 auto 0 0;border-radius:999px;background:var(--brand);max-width:100%}
+  .card.warn .bar .fill{background:var(--accent)}
+  .bar .target{position:absolute;top:-.3cqw;bottom:-.3cqw;width:.3cqw;background:var(--accent);border-radius:.2cqw}
+  .bar .target::after{content:"21d";position:absolute;top:-1.6cqw;left:50%;transform:translateX(-50%);
+    font-size:.82cqw;font-weight:900;color:var(--accent-ink)}
+  .rows{display:flex;flex-direction:column;gap:.55cqw;margin-top:auto;padding-top:1cqw}
+  .r{display:flex;align-items:baseline;justify-content:space-between;gap:1cqw;font-size:1.1cqw}
+  .r .k{color:var(--muted);font-weight:500}
+  .r .v{font-weight:800;color:var(--ink)}
+  .v.pos{color:var(--accent-ink)} .v.neg{color:var(--good-ink)}
+
+  /* Right column — production + cadence */
+  .col-side{display:grid;grid-template-rows:auto 1fr;gap:1.4cqw}
+  .panel{min-height:0;display:grid;grid-template-rows:auto 1fr;gap:.8cqw}
+  .tablewrap{min-height:0;overflow:hidden;border:1px solid var(--line);border-radius:1cqw;
+    background:var(--card);box-shadow:0 1px 2px rgba(5,40,80,.05),0 .8cqw 1.6cqw -1cqw rgba(5,40,80,.16)}
+  table{border-collapse:collapse;width:100%;font-size:1.1cqw}
+  th,td{padding:.34cqw 1.1cqw;text-align:right;white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font-size:.9cqw;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+    font-weight:800;border-bottom:1px solid var(--line);background:var(--card-2)}
+  tbody td{border-bottom:1px solid var(--line-2);font-weight:600}
+  tr.grouprow td{background:var(--card-2);font-weight:900;font-size:.92cqw;letter-spacing:.04em;
+    text-transform:uppercase;padding-top:.42cqw;padding-bottom:.42cqw}
+  tr.grouprow.zh td{color:var(--zh-ink)} tr.grouprow.rrx td{color:var(--rrx-ink)}
+  td.fcell{font-weight:800;color:var(--ink)}
+  .bdot{display:inline-block;width:.8cqw;height:.8cqw;border-radius:.25cqw;margin-right:.8cqw;vertical-align:middle}
+  tr.zh .bdot{background:var(--zh)} tr.rrx .bdot{background:var(--rrx)}
+  tr.total td{border-top:.2cqw solid var(--navy);font-weight:900;background:var(--card-2);color:var(--navy)}
+  .mini{display:inline-flex;gap:.35cqw;justify-content:flex-end}
+  .step{min-width:1.7cqw;text-align:center;padding:.15cqw 0;border-radius:.4cqw;font-size:.88cqw;
+    font-weight:800;background:var(--line-2);color:var(--faint)}
+  .step.on{background:var(--good-soft);color:var(--good-ink)}
+
+  /* Weekly cadence */
+  .cadence{min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr auto;gap:.7cqw}
+  .day{min-height:0;background:var(--card);border:1px solid var(--line);border-radius:.9cqw;
+    padding:.7cqw 1.05cqw;display:flex;flex-direction:column;gap:.45cqw;box-shadow:0 1px 2px rgba(5,40,80,.05)}
+  .day.misc{grid-column:1/-1;flex-direction:row;align-items:center;gap:1.4cqw;
+    padding:.6cqw 1.4cqw;background:var(--card-2);border-style:dashed}
+  .day.misc .dmisc{display:flex;align-items:baseline;flex-wrap:wrap;gap:.3cqw 1cqw}
+  .day.misc .dmisc b{display:inline;margin:0;color:var(--navy)}
+  .dn{font-size:.95cqw;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--navy)}
+  .dphase{display:flex;align-items:center;gap:.5cqw;font-size:.95cqw;color:var(--ink);font-weight:600}
+  .arrow{color:var(--faint);font-weight:900}
+  .dtags{display:flex;gap:.4cqw;margin-top:auto}
+  .tg{font-size:.8cqw;font-weight:900;color:#fff;border-radius:.35cqw;padding:.15cqw .6cqw}
+  .tg.zh{background:var(--zh-ink)} .tg.rrx{background:var(--rrx-ink)}
+  .dmisc{font-size:1cqw;color:var(--muted);font-weight:600}
+  .dmisc b{display:block;color:var(--ink);font-weight:800;font-size:1.1cqw;margin-bottom:.3cqw}
+  .skel{color:var(--faint)}
+
+  /* One-time setup notice (only if the Orbit feed URL is missing) */
+  .notice{position:fixed;left:2cqw;right:2cqw;bottom:2cqw;z-index:5;
+    border:1px solid var(--line);border-left:.4cqw solid var(--accent);background:var(--card);
+    border-radius:.8cqw;padding:1.2cqw 1.5cqw;font-size:1.1cqw;color:var(--ink);
+    display:flex;gap:1cqw;align-items:flex-start;box-shadow:0 1cqw 3cqw -1cqw rgba(0,0,0,.45)}
+  .notice .ic{flex:none;font-weight:900;color:var(--accent-ink);font-size:1.4em;line-height:1}
+  .notice code{background:var(--card-2);border:1px solid var(--line);border-radius:.4cqw;
+    padding:.1cqw .5cqw;color:var(--navy-deep)}
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="screen">
+  <header class="band">
+    <div class="band-l">
+      <svg class="zh-logo" role="img" aria-label="ZipHealth" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 157 40"><path d="M20.502 36.303c-9.012 0-16.32-7.298-16.32-16.303S11.49 3.697 20.502 3.697 36.822 10.995 36.822 20s-7.308 16.303-16.32 16.303M20.359 0C9.302 0 .335 8.953.335 20s8.967 20 20.024 20 20.025-8.953 20.025-20S31.417 0 20.359 0"/><path d="M32.084 16.532v6.936H23.83v8.257h-6.935v-8.257H8.637v-6.936h8.258V8.275h6.936v8.257zM47.36 25.854l9.52-11.384H48.11v-3.28h13.968v3.081l-9.52 11.385h9.767v3.283H47.361zM64.088 16.087h3.53v12.852h-3.53zm3.53-1.99h-3.53V11.19h3.53zM84.672 11.19h3.903V18h7.186v-6.81h3.903v17.746H95.76V21.28h-7.186v7.656h-3.903zM110.623 21.134c-.323-1.788-1.092-2.734-2.81-2.734-2.236 0-2.883 1.74-2.932 2.734zm-5.742 2.236c.101 2.237 1.193 3.256 3.158 3.256 1.416 0 2.56-.87 2.783-1.666h3.106c-.995 3.033-3.106 4.323-6.014 4.323-4.052 0-6.564-2.786-6.564-6.761s2.661-6.786 6.564-6.786c4.376 0 6.487 3.68 6.24 7.63h-9.273zM123.994 22.647c-.595.522-1.84.546-2.932.744-1.092.223-2.087.599-2.087 1.889s1.019 1.642 2.163 1.642c2.759 0 2.859-2.188 2.859-2.957v-1.318zm-8.153-2.609c.198-3.304 3.155-4.299 6.038-4.299 2.56 0 5.642.57 5.642 3.656v6.685c0 1.169.125 2.337.449 2.859h-3.579a5 5 0 0 1-.247-1.242c-1.12 1.169-2.759 1.59-4.324 1.59-2.435 0-4.376-1.217-4.376-3.854 0-2.908 2.188-3.604 4.376-3.903 2.164-.323 4.177-.247 4.177-1.69 0-1.517-1.043-1.74-2.285-1.74-1.342 0-2.212.547-2.337 1.938zM133.142 11.19h-3.531v17.746h3.531zM140.147 16.087h2.584v2.362h-2.584v6.365c0 1.193.299 1.492 1.492 1.492.372 0 .72-.024 1.092-.1v2.757c-.598.101-1.367.126-2.062.126-2.164 0-4.052-.498-4.052-3.058V18.45h-2.14v-2.362h2.14v-3.854h3.53zM144.175 11.19h3.53v6.685h.077c.894-1.44 2.435-2.136 3.753-2.136 3.753 0 4.699 2.111 4.699 5.294v7.903h-3.531v-7.26c0-2.11-.622-3.158-2.26-3.158-1.913 0-2.734 1.068-2.734 3.68v6.738h-3.531V11.19zM78.015 25.45q-.763 1.067-2.084 1.068c-.95 0-1.676-.355-2.187-1.068q-.762-.964-.762-2.893-.001-2.082.713-3.047.762-1.067 2.135-1.068c.915 0 1.677.355 2.188 1.067.512.714.762 1.726.762 3.047q0 1.831-.762 2.894m2.745-8.125q-.76-.913-2.06-1.398a7.4 7.4 0 0 0-2.567-.484 8.4 8.4 0 0 0-4.525 1.294q-2.083 1.295-2.083 4.849v11.297h3.457v-5.405c.407.713.95 1.235 1.628 1.576q.967.455 2.237.456c1.59 0 2.897-.644 3.913-1.93q1.528-1.983 1.527-5.18c0-2.132-.508-3.757-1.527-5.078"/></svg>
+      <div class="band-sub">Chewable&nbsp;ED Production &middot; US Non-Sterile Lab</div>
+    </div>
+    <div class="band-r">
+      <div class="clock tnum" id="clock">--:--</div>
+      <div class="band-status"><span class="pulse loading" id="pulse"></span><span id="syncmsg">Loading&hellip;</span></div>
+      <div class="helios">A HeliosX company</div>
+    </div>
+  </header>
+
+  <div class="body">
+
+    <section class="col col-stock">
+      <div class="sechead">
+        <h2>Stock position</h2>
+        <span class="note" id="stockNote">Days of cover vs 21-day target</span>
+        <span class="leg">
+          <span class="lg"><span class="dot zh"></span>ZipHealth</span>
+          <span class="lg"><span class="dot rrx"></span>RocketRx</span>
+        </span>
+      </div>
+      <div class="stockgrid" id="stockGrid" aria-label="Stock position vs 21-day target"></div>
+    </section>
+
+    <section class="col col-side">
+      <div class="panel">
+        <div class="sechead"><h3 id="prodHead">This week&rsquo;s production</h3><span class="note" id="prodNote">Batches and tablets against the weekly plan</span></div>
+        <div class="tablewrap"><table id="prodTable"></table></div>
+      </div>
+      <div class="panel">
+        <div class="sechead"><h3>Weekly cadence</h3><span class="note">Mon&ndash;Wed produce &middot; Thu&ndash;Fri maintain</span></div>
+        <div class="cadence" id="cadence" aria-label="Weekly production cadence"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div id="setup"></div>
+</div>
+
+<script>
+"use strict";
+/* =======================================================================
+   SETUP — paste your two "Publish to web" CSV links between the quotes.
+   In Google Sheets: File -> Share -> Publish to web -> pick the tab ->
+   choose "Comma-separated values (.csv)" -> Publish -> copy the link.
+   Do this once for "Weekly stock forecasting" and once for "Summary Dashboard".
+   ======================================================================= */
+/* Data now comes from Orbit, live. Paste Orbit's read-only (access:ANYONE) web-app /exec URL
+   below; the two feeds hang off it as ?feed=stock and ?feed=summary. No published-sheet CSVs. */
+var ORBIT_FEED_BASE = "https://script.google.com/macros/s/AKfycbxZDoOvQnM42r33K6L6WL4foQxfwpLs9GFIU0hF0Esi-bP6CR0trrDEhD2isO0dtJrU/exec";
+var CSV_STOCK   = ORBIT_FEED_BASE + "?feed=stock";
+var CSV_SUMMARY = ORBIT_FEED_BASE + "?feed=summary";
+var REFRESH_MS  = 2 * 60 * 1000; // re-pull every 2 minutes — Orbit serves live, so poll often
+/* ======================================================================= */
+
+var ORDER = ["ZH-20/5","ZH-20/20","ZH-90/5","RRX-20/5","RRX-20/20","RRX-90/5"];
+var SCHEDULE = [
+  {dn:"Mon &middot; Day 1"},{dn:"Tue &middot; Day 2"},{dn:"Wed &middot; Day 3"}
+];
+
+// ---------- helpers ----------
+function fkey(s){
+  if(s==null) return null;
+  var t=String(s).toUpperCase().replace(/[\s/\\]/g,"");
+  var brand=t.indexOf("RRX")===0?"RRX":(t.indexOf("ZH")===0?"ZH":null);
+  var m=t.match(/S(\d+)T(\d+)/);
+  if(!brand||!m) return null;
+  return brand+"-"+parseInt(m[1],10)+"/"+parseInt(m[2],10);
+}
+function brandOf(k){return k.indexOf("RRX")===0?"rrx":"zh";}
+function strengthOf(k){return k.split("-")[1];}
+function num(x){
+  if(x==null) return NaN;
+  var t=String(x).replace(/,/g,"").replace(/[^0-9.\-]/g,"");
+  if(t===""||t==="-"||t===".") return NaN;
+  return parseFloat(t);
+}
+function fmt(n){return isFinite(n)?Math.round(n).toLocaleString("en-US"):"—";}
+function fmt1(n){return isFinite(n)?n.toFixed(1):"—";}
+function norm(s){return String(s==null?"":s).toLowerCase().replace(/\s+/g," ").replace(/[:?]+$/,"").trim();}
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+
+// ---------- CSV parser (RFC-4180-ish) ----------
+function parseCSV(text){
+  var rows=[],row=[],cell="",i=0,q=false,c;
+  while(i<text.length){
+    c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; }
+      else cell+=c;
+    }else{
+      if(c==='"') q=true;
+      else if(c===',' ){ row.push(cell); cell=""; }
+      else if(c==='\n'){ row.push(cell); rows.push(row); row=[]; cell=""; }
+      else if(c==='\r'){ /* skip */ }
+      else cell+=c;
+    }
+    i++;
+  }
+  if(cell!==""||row.length){ row.push(cell); rows.push(row); }
+  return rows.map(function(r){return r.map(function(x){return x.trim();});});
+}
+
+// ---------- extract ----------
+function getStock(rows){
+  var header=null;
+  for(var i=0;i<rows.length;i++){ if(/formulation/i.test(rows[i][0]||"") && fkey(rows[i][1])){header=rows[i];break;} }
+  if(!header) return null;
+  var cols={}; for(var c=1;c<header.length;c++){var k=fkey(header[c]); if(k) cols[c]=k;}
+  function rowByLabel(re){for(var j=0;j<rows.length;j++){ if(re.test(norm(rows[j][0]))) return rows[j]; } return null;}
+  function series(re,asNum){var r=rowByLabel(re),out={}; if(!r) return out; for(var c in cols){var v=r[c]; out[cols[c]]=asNum===false?(v||""):num(v);} return out;}
+  var updated=null;
+  for(var u=0;u<rows.length;u++){ if(/^updated/i.test(rows[u][0]||"")){updated=rows[u][0].replace(/^updated:?\s*/i,"").trim();break;} }
+  return {
+    current:series(/^current stock$/), avg:series(/dispatch per week/),
+    forecast:series(/forecasted tablets per week/), days:series(/days remaining/),
+    target:series(/^target$/), under:series(/under target/,false),
+    needed:series(/tablets needed/), batches:series(/amount to compound/), updated:updated
+  };
+}
+function getSummary(rows){
+  var week=null;
+  for(var i=0;i<rows.length;i++){ if(/select week/i.test(rows[i][0]||"")){week=rows[i][1];break;} }
+  var data={},totals=null;
+  rows.forEach(function(r){
+    var k=fkey(r[0]);
+    if(k){ data[k]={planned:num(r[1]),done:num(r[2]),tablets:num(r[3]),ipB:num(r[4]),ipT:num(r[5]),s1:num(r[6]),s2:num(r[7]),s3:num(r[8])}; }
+    else if(/^total$/i.test(norm(r[0]))){ totals={planned:num(r[1]),done:num(r[2]),tablets:num(r[3]),ipB:num(r[4]),ipT:num(r[5]),s1:num(r[6]),s2:num(r[7]),s3:num(r[8])}; }
+  });
+  return {week:week,data:data,totals:totals};
+}
+
+// ---------- render ----------
+var TARGET_SCALE=32;
+function renderCadence(){
+  var html=SCHEDULE.map(function(d){
+    return '<div class="day"><span class="dn">'+d.dn+'</span><span class="dphase">Powder <span class="arrow">&rarr;</span> Press</span><span class="dtags"><span class="tg zh">ZH</span><span class="tg rrx">RRX</span></span></div>';
+  }).join("");
+  html+='<div class="day misc"><span class="dmisc"><b>Thu / Fri</b><span>Clean &amp; maintain &middot; machine service &middot; tech training</span></span></div>';
+  document.getElementById("cadence").innerHTML=html;
+}
+function renderStock(st){
+  var host=document.getElementById("stockGrid");
+  if(!st){host.innerHTML='<p class="skel">No stock-forecast rows found.</p>';return;}
+  var html="";
+  ORDER.forEach(function(k){
+    var b=brandOf(k),days=st.days[k],cur=st.current[k],avg=st.avg[k],batches=st.batches[k];
+    var under=/true/i.test(st.under[k]||""),hasDays=isFinite(days);
+    var sCls=!hasDays?"idle":(under?"warn":"good"),sTxt=!hasDays?"No data":(under?"Under target":"On track");
+    var fillPct=hasDays?Math.max(2,Math.min(100,days/TARGET_SCALE*100)):0;
+    var tgtPct=Math.min(100,(st.target[k]?st.target[k]:21)/TARGET_SCALE*100);
+    var bTxt,bCls="";
+    if(isFinite(batches)&&batches>0.05){bTxt=fmt1(batches)+" batch"+(batches>=1.5?"es":"");bCls="pos";}
+    else if(isFinite(batches)){bTxt="None needed";bCls="neg";} else bTxt="—";
+    html+='<div class="card '+b+' '+sCls+'"><div class="chead"><span class="chip">'+(b==="zh"?"ZH":"RRX")+' &middot; '+esc(strengthOf(k))+'</span><span class="status '+sCls+'">'+sTxt+'</span></div>'
+      +'<div class="bignum"><span class="n tnum">'+(hasDays?fmt1(days):"—")+'</span><span class="u">days cover</span></div>'
+      +'<div class="csub">Target 21d &middot; '+(isFinite(avg)?fmt(avg)+"/wk dispatch":"rate n/a")+'</div>'
+      +'<div class="bar"><div class="fill" style="width:'+fillPct+'%"></div><div class="target" style="left:'+tgtPct+'%"></div></div>'
+      +'<div class="rows"><div class="r"><span class="k">Current stock</span><span class="v tnum">'+fmt(cur)+'</span></div>'
+      +'<div class="r"><span class="k">To compound</span><span class="v '+bCls+'">'+bTxt+'</span></div></div></div>';
+  });
+  host.innerHTML=html;
+  document.getElementById("stockNote").textContent=st.updated?("Stock as entered: "+st.updated):"Days of cover vs 21-day target.";
+}
+function stepCell(v){var on=isFinite(v)&&v>0;return '<span class="step'+(on?" on":"")+'">'+(isFinite(v)?v:"0")+'</span>';}
+function prodCells(d){return '<td class="tnum">'+(isFinite(d.done)?d.done:0)+' / '+(isFinite(d.planned)?d.planned:0)+'</td><td class="tnum">'+fmt(d.tablets)+'</td><td><span class="mini">'+stepCell(d.s1)+stepCell(d.s2)+stepCell(d.s3)+'</span></td>';}
+function renderProd(sm){
+  var tbl=document.getElementById("prodTable");
+  if(!sm){tbl.innerHTML='<tbody><tr><td class="skel" style="padding:1cqw 1.1cqw">No weekly summary rows found.</td></tr></tbody>';return;}
+  document.getElementById("prodHead").textContent=sm.week?("Production — week "+esc(String(sm.week))):"This week’s production";
+  var html='<thead><tr><th>Formulation</th><th>Batches</th><th>Tablets</th><th>Sht&middot;Pwd&middot;Prs</th></tr></thead><tbody>';
+  [["zh","ZipHealth"],["rrx","RocketRx"]].forEach(function(g){
+    html+='<tr class="grouprow '+g[0]+'"><td colspan="4">'+g[1]+'</td></tr>';
+    ORDER.filter(function(k){return brandOf(k)===g[0];}).forEach(function(k){var d=sm.data[k]||{};html+='<tr class="'+g[0]+'"><td class="fcell"><span class="bdot"></span>'+esc(strengthOf(k))+'</td>'+prodCells(d)+'</tr>';});
+  });
+  if(sm.totals) html+='<tr class="total"><td>All formulations</td>'+prodCells(sm.totals)+'</tr>';
+  tbl.innerHTML=html+'</tbody>';
+}
+function skeletons(){
+  var h="";ORDER.forEach(function(k){var b=brandOf(k);h+='<div class="card '+b+' idle"><div class="chead"><span class="chip">'+(b==="zh"?"ZH":"RRX")+' &middot; '+esc(strengthOf(k))+'</span><span class="status idle">&hellip;</span></div><div class="bignum"><span class="n tnum skel">&mdash;</span><span class="u">days cover</span></div><div class="csub skel">Loading&hellip;</div><div class="bar"><div class="target" style="left:'+(21/TARGET_SCALE*100)+'%"></div></div><div class="rows"><div class="r"><span class="k">Current stock</span><span class="v skel">&mdash;</span></div><div class="r"><span class="k">To compound</span><span class="v skel">&mdash;</span></div></div></div>';});
+  document.getElementById("stockGrid").innerHTML=h;
+  document.getElementById("prodTable").innerHTML='<tbody><tr><td class="skel" style="padding:1cqw 1.1cqw">Loading&hellip;</td></tr></tbody>';
+}
+
+// ---------- status + clock ----------
+var pulse=document.getElementById("pulse"),syncmsg=document.getElementById("syncmsg");
+function setSync(state,msg){pulse.className="pulse "+state;syncmsg.innerHTML=msg;}
+function tick(){try{document.getElementById("clock").textContent=new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}catch(e){}}
+function timeStr(d){try{return d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}catch(e){return "";}}
+
+// ---------- fetch loop ----------
+function needsSetup(){return CSV_STOCK.indexOf("PASTE_")===0||CSV_SUMMARY.indexOf("PASTE_")===0;}
+function showSetup(){
+  document.getElementById("setup").innerHTML='<div class="notice"><span class="ic">&#9881;</span><span><strong>One-time setup needed.</strong> Paste Orbit&rsquo;s read-only (access:ANYONE) web-app <code>/exec</code> URL into <code>ORBIT_FEED_BASE</code> near the top of the &lt;script&gt;. The board then pulls <code>?feed=stock</code> and <code>?feed=summary</code> live from Orbit &mdash; no published-sheet links.</span></div>';
+  setSync("err","Awaiting CSV links");
+}
+async function pull(){
+  if(needsSetup()){showSetup();return;}
+  setSync("loading","Refreshing from Google Sheets&hellip;");
+  try{
+    var bust="cachebust="+Date.now();
+    function withBust(u){return u+(u.indexOf("?")>-1?"&":"?")+bust;}
+    var res=await Promise.all([fetch(withBust(CSV_STOCK)),fetch(withBust(CSV_SUMMARY))]);
+    if(!res[0].ok||!res[1].ok) throw new Error("http");
+    var txt=await Promise.all([res[0].text(),res[1].text()]);
+    renderStock(getStock(parseCSV(txt[0])));
+    renderProd(getSummary(parseCSV(txt[1])));
+    setSync("live","Updated "+timeStr(new Date())+" &middot; refreshes every "+Math.round(REFRESH_MS/60000)+" min");
+  }catch(e){
+    setSync("err","Couldn’t reach the sheet — check the published CSV links are live &amp; public. Showing last data.");
+  }
+}
+
+// ---------- boot ----------
+renderCadence();
+skeletons();
+tick(); setInterval(tick,30000);
+pull();
+setInterval(pull,REFRESH_MS);
+</script>
+</body>
+</html>
