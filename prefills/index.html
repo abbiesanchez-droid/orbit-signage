@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZipHealth — Prefill Signage</title>
+<style>
+  :root{
+    /* Brand ramp (heliosx.com): violet -> blue -> azure -> mint. Accent only. */
+    --g1:#6b2bd6; --g2:#1f4bff; --g3:#2f7bff; --g4:#17c0c0;
+    --ground:#070b16; --ground2:#0d1426;
+    --surface:#111a2f; --surface2:#0e1730;
+    --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.045);
+    --ink:#f2f5fc; --muted:#9fabca; --dim:#66728f;
+    --ok:#33d6a0; --warn:#ffbe3d; --bad:#ff6d7f; --accent:#7ea2ff;
+    --rad:1.3cqmin;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#02040a;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+    font-variant-numeric:tabular-nums}
+  body{display:flex;align-items:center;justify-content:center}
+
+  /* One 16:9 board, contained to the viewport so OptiSigns letterboxes rather than clips. */
+  .screen{position:relative;container-type:size;
+    width:min(100vw,177.78vh);height:min(56.25vw,100vh);
+    background:
+      radial-gradient(120% 90% at 100% -10%, rgba(31,75,255,.15), transparent 52%),
+      radial-gradient(110% 90% at -8% 115%, rgba(107,43,214,.12), transparent 55%),
+      linear-gradient(168deg,var(--ground),var(--ground2));
+    display:flex;flex-direction:column;overflow:hidden}
+  .screen::before{content:"";position:absolute;inset:0 0 auto 0;height:.45cqmin;
+    background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3),var(--g4))}
+
+  .pad{flex:1;display:flex;flex-direction:column;gap:1.8cqmin;padding:2.4cqmin 2.8cqmin 2cqmin;min-height:0}
+
+  /* Header */
+  .top{display:flex;align-items:center;justify-content:space-between;flex:none}
+  .brand{display:flex;align-items:center;gap:1.4cqmin}
+  .mark{width:4cqmin;height:4cqmin;border-radius:50%;flex:none;
+    background:conic-gradient(from 210deg,var(--g1),var(--g2),var(--g3),var(--g4),var(--g1));
+    box-shadow:0 0 1.2cqmin rgba(47,123,255,.45);position:relative}
+  .mark::after{content:"";position:absolute;inset:30%;border-radius:50%;background:var(--ground2)}
+  .wm{font-size:3cqmin;font-weight:800;letter-spacing:-.01em;line-height:1}
+  .sub{font-size:1.5cqmin;color:var(--muted);font-weight:600;margin-top:.4cqmin}
+  .when{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:.3cqmin}
+  .day{font-size:3.4cqmin;font-weight:800;line-height:1;letter-spacing:-.01em;
+    background:linear-gradient(90deg,#abc0ff,#fff 80%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .clock{font-size:1.75cqmin;color:var(--muted);font-weight:600}
+
+  /* Main split: dense grid (left) + side column (right) */
+  .main{flex:1;display:grid;grid-template-columns:2.05fr 1fr;gap:1.8cqmin;min-height:0}
+  .panel{background:linear-gradient(180deg,var(--surface),var(--surface2));border:1px solid var(--line);
+    border-radius:var(--rad);display:flex;flex-direction:column;min-height:0}
+  .ph{display:flex;align-items:baseline;justify-content:space-between;flex:none;padding:1.6cqmin 1.8cqmin 1.2cqmin}
+  .ph h2{font-size:2.2cqmin;font-weight:800}
+  .ph .meta{font-size:1.6cqmin;color:var(--dim);font-weight:700}
+  .ph .meta b{color:var(--accent)}
+
+  /* Production grid */
+  .grid{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 1.8cqmin 1.4cqmin}
+  .gcols{display:grid;grid-template-columns:minmax(0,1.85fr) .72fr .78fr .62fr .72fr .85fr 1.3fr .5fr;align-items:center;gap:1cqmin}
+  .ghead{font-size:1.3cqmin;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;font-weight:700;
+    padding:0 .8cqmin .9cqmin;border-bottom:1px solid var(--line);flex:none}
+  .gbody{flex:1;display:grid;grid-auto-rows:1fr;min-height:0}
+  .grow{padding:0 .8cqmin;border-bottom:1px solid var(--line2)}
+  .grow.gstart{box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+  .r{text-align:right}  .c{text-align:center}
+
+  .it{font-size:2cqmin;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.05}
+  .it.cont{color:var(--dim);font-weight:600}
+  .pk{font-size:1.75cqmin;color:#c3cde8;font-weight:700}
+  .num{font-size:1.95cqmin;font-weight:600;color:#c9d3ee}
+  .num.z{color:var(--dim)}
+  .pull{font-size:1.95cqmin;font-weight:600;color:#b9c4e4}
+  .make{font-size:2.5cqmin;font-weight:800;color:#fff}
+  .make.z{font-size:1.9cqmin;color:var(--dim);font-weight:600}
+  .days{font-size:2.05cqmin;font-weight:800}
+  .days small{font-size:1.35cqmin;font-weight:600;color:var(--dim);margin-left:.45cqmin}
+  .days.ok{color:#c9d3ee} .days.warn{color:var(--warn)} .days.bad{color:#ff95a2}
+  .stg{font-size:2cqmin;font-weight:800}
+  .stg.y{color:var(--ok)} .stg.n{color:var(--dim)} .stg.none{color:transparent}
+
+  .gfoot{flex:none;border-top:2px solid var(--line);padding:1.1cqmin .8cqmin 0;margin-top:.2cqmin}
+  .gfoot .it{font-size:1.6cqmin;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  .gfoot .num,.gfoot .pull{font-size:2cqmin;font-weight:800;color:var(--ink)}
+  .gfoot .make{font-size:2.6cqmin}
+
+  /* Side column */
+  .side{display:flex;flex-direction:column;gap:1.6cqmin;min-height:0}
+  .kpi{background:linear-gradient(180deg,var(--surface),var(--surface2));border:1px solid var(--line);
+    border-radius:var(--rad);padding:1.5cqmin 1.8cqmin;position:relative;overflow:hidden;flex:none}
+  .kpi .l{font-size:1.55cqmin;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+  .kpi .v{font-size:4.6cqmin;font-weight:800;line-height:1;display:flex;align-items:baseline;gap:.6cqmin;margin-top:.4cqmin}
+  .kpi .v u{font-size:1.75cqmin;font-weight:600;color:var(--muted);text-decoration:none}
+  .kpi.hero{background:radial-gradient(120% 140% at 0 0, rgba(47,123,255,.2), transparent 60%),linear-gradient(180deg,var(--surface),var(--surface2))}
+  .kpi.hero .v{font-size:6.4cqmin;color:#fff}
+  .kpi.hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.5cqmin;background:linear-gradient(180deg,var(--g2),var(--g4))}
+  .kpi2{display:grid;grid-template-columns:1fr 1fr;gap:1.6cqmin;flex:none}
+  .kpi .note{font-size:1.4cqmin;color:var(--dim);font-weight:600;margin-top:.3cqmin}
+  .kpi.risk .v{color:#ffce7d}
+  .bar{height:.8cqmin;border-radius:1cqmin;background:rgba(255,255,255,.08);overflow:hidden;margin-top:.7cqmin}
+  .bar i{display:block;height:100%;border-radius:1cqmin;background:linear-gradient(90deg,var(--ok),#7fe9c6)}
+
+  .stations{flex:1;min-height:0}
+  .stwrap{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.9cqmin;align-content:start;padding:0 1.8cqmin 1.6cqmin;min-height:0;overflow:hidden}
+  .sc{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.8cqmin;
+    background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:.8cqmin;padding:.85cqmin 1.1cqmin}
+  .sc .sn{width:2.6cqmin;height:2.6cqmin;border-radius:.6cqmin;display:grid;place-items:center;
+    background:rgba(47,123,255,.18);color:#bcd0ff;font-weight:800;font-size:1.5cqmin;flex:none}
+  .sc .st{font-size:1.85cqmin;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#dde5f8}
+  .sc .sa{font-size:2cqmin;font-weight:800}
+  .sc.off{opacity:.36} .sc.off .sa{color:var(--dim)}
+  .sc.sum{grid-column:1 / -1;background:rgba(31,75,255,.12);border-color:rgba(90,140,255,.3)}
+  .sc.sum .sn{background:transparent;color:var(--muted)}
+  .sc.sum .sa u{font-size:1.5cqmin;color:var(--muted);font-weight:600;text-decoration:none}
+
+  .foot{display:flex;align-items:center;justify-content:space-between;color:var(--dim);font-size:1.45cqmin;font-weight:600;flex:none}
+  .live{display:inline-flex;align-items:center;gap:.6cqmin}
+  .live::before{content:"";width:.9cqmin;height:.9cqmin;border-radius:50%;background:var(--dim)}
+  .live.ok{color:var(--ok)} .live.ok::before{background:var(--ok);box-shadow:0 0 .7cqmin var(--ok)}
+  .live.load{color:var(--warn)} .live.load::before{background:var(--warn)}
+  .live.err{color:#ff95a2} .live.err::before{background:var(--bad)}
+
+  .wait{flex:1;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:2cqmin;font-weight:600;text-align:center;padding:3cqmin;line-height:1.5}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="screen"><div class="pad">
+
+  <header class="top">
+    <div class="brand">
+      <div class="mark"></div>
+      <div>
+        <div class="wm">Prefills</div>
+        <div class="sub">Morning setup · vial tray production</div>
+      </div>
+    </div>
+    <div class="when">
+      <div class="day" id="day">—</div>
+      <div class="clock"><span id="clk">--:--</span> · <span id="date"></span></div>
+    </div>
+  </header>
+
+  <section class="main">
+    <!-- Dense production grid -->
+    <div class="panel">
+      <div class="ph"><h2>Morning count</h2><span class="meta" id="gridMeta"></span></div>
+      <div class="grid">
+        <div class="gcols ghead">
+          <span>Item</span><span class="r">Pack</span><span class="r">On floor</span><span class="r">Back</span>
+          <span class="r">Pull</span><span class="r">Make</span><span class="r">Days cover</span><span class="c">Set</span>
+        </div>
+        <div class="gbody" id="gbody"><div class="wait">Connecting to the feed…</div></div>
+        <div class="gcols gfoot" id="gfoot"></div>
+      </div>
+    </div>
+
+    <!-- Side column -->
+    <aside class="side">
+      <div class="kpi hero">
+        <div class="l">Set up today</div>
+        <div class="v"><span id="kSetup">—</span><u>trays to make</u></div>
+      </div>
+      <div class="kpi2">
+        <div class="kpi">
+          <div class="l">Staged ready</div>
+          <div class="v"><span id="kStaged">—</span><u id="kStagedOf"></u></div>
+          <div class="bar"><i id="stagedBar" style="width:0"></i></div>
+        </div>
+        <div class="kpi risk">
+          <div class="l">Running low</div>
+          <div class="v"><span id="kRisk">—</span><u>SKUs</u></div>
+          <div class="note" id="kRiskNote">below 3 days</div>
+        </div>
+      </div>
+      <div class="panel stations">
+        <div class="ph"><h2>Stations</h2><span class="meta" id="stMeta"></span></div>
+        <div class="stwrap" id="strip"></div>
+      </div>
+    </aside>
+  </section>
+
+  <footer class="foot">
+    <span>Source · Prefill Production Plan — Start Here &nbsp;·&nbsp; keep ≥ 3 days of stock</span>
+    <span class="live load" id="sync">Connecting…</span>
+  </footer>
+
+</div></div>
+
+<script>
+  // Public signage feed (same base the chewable board polls). ?feed=prefill returns the section-tagged
+  // CSV. A ?src= override points this same page at a staging/local feed for testing.
+  var ORBIT_FEED_BASE = "https://script.google.com/macros/s/AKfycbxZDoOvQnM42r33K6L6WL4foQxfwpLs9GFIU0hF0Esi-bP6CR0trrDEhD2isO0dtJrU/exec";
+  var QS = new URLSearchParams(location.search);
+  var FEED_URL = QS.get('src') || (ORBIT_FEED_BASE + "?feed=prefill");
+  var REFRESH_MS = 2 * 60 * 1000;
+
+  function esc(s){return String(s==null?'':s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+  function n(v){var x=Number(String(v==null?'':v).replace(/[, ]/g,''));return isFinite(x)?x:0;}
+  function has(v){return v!=='' && v!=null;}
+  function f1(v){return has(v)?(Math.round(n(v)*10)/10).toFixed(1):'';}
+  function risk(now){ if(!has(now)) return 'ok'; var d=n(now); return d<2?'bad':(d<3?'warn':'ok'); }
+  function drugOf(item){ return String(item).replace(/\s*×.*$/,'').trim()||String(item); }
+
+  // RFC-4180-ish CSV parser (same approach as the chewable board).
+  function parseCSV(text){
+    var rows=[],row=[],cell="",i=0,q=false,c;
+    while(i<text.length){c=text[i];
+      if(q){ if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=c; }
+      else{ if(c==='"') q=true;
+        else if(c===',') { row.push(cell); cell=""; }
+        else if(c==='\n'){ row.push(cell); rows.push(row); row=[]; cell=""; }
+        else if(c==='\r'){ }
+        else cell+=c; }
+      i++;
+    }
+    if(cell!==""||row.length){ row.push(cell); rows.push(row); }
+    return rows.map(function(r){return r.map(function(x){return x.trim();});});
+  }
+
+  function parsePrefill(rows){
+    var meta={}, stations=[], counts=[];
+    rows.forEach(function(r){
+      var sec=(r[0]||'').toLowerCase();
+      if(sec==='meta') meta[r[1]]=r[2];
+      else if(sec==='station') stations.push({no:r[1], tech:r[2]||'', per:n(r[3]), asg:n(r[4])});
+      else if(sec==='count') counts.push({item:r[1], qty:r[2], floor:r[3], back:r[4], pull:r[5],
+        setup:r[6], staged:(String(r[7]).toUpperCase()==='TRUE'), now:r[8], after:r[9]});
+    });
+    return {meta:meta, stations:stations, counts:counts};
+  }
+
+  function render(d){
+    document.getElementById('day').textContent = d.meta.day || '—';
+
+    // Aggregates
+    var setUp=0, floor=0, back=0, pull=0, stagedTrays=0, below3=0, crit=0;
+    d.counts.forEach(function(c){
+      if(has(c.setup)) setUp+=n(c.setup);
+      if(has(c.floor)) floor+=n(c.floor);
+      if(has(c.back))  back +=n(c.back);
+      if(has(c.pull))  pull +=n(c.pull);
+      if(c.staged && has(c.setup)) stagedTrays+=n(c.setup);
+      if(has(c.now)){ var dd=n(c.now); if(dd<3) below3++; if(dd<2) crit++; }
+    });
+
+    // Production grid
+    var prevDrug=null, html='';
+    d.counts.forEach(function(c){
+      var drug=c.item, grp=(drug!==prevDrug); prevDrug=drug;
+      var mk=n(c.setup), hasMk=has(c.setup)&&mk>0;
+      var daysCls=risk(c.now);
+      var stg = !hasMk ? '<span class="stg none">·</span>'
+              : c.staged ? '<span class="stg y">✓</span>' : '<span class="stg n">○</span>';
+      html+='<div class="gcols grow'+(grp?' gstart':'')+'">'
+          +   '<span class="it'+(grp?'':' cont')+'">'+(grp?esc(drug):'')+'</span>'
+          +   '<span class="pk r">×'+esc(c.qty)+'</span>'
+          +   '<span class="num r'+(n(c.floor)?'':' z')+'">'+(has(c.floor)?n(c.floor):'–')+'</span>'
+          +   '<span class="num r'+(n(c.back)?'':' z')+'">'+(n(c.back)?n(c.back):'–')+'</span>'
+          +   '<span class="pull r'+(n(c.pull)?'':' z')+'">'+(n(c.pull)?n(c.pull):'–')+'</span>'
+          +   '<span class="make r'+(hasMk?'':' z')+'">'+(hasMk?mk:'–')+'</span>'
+          +   '<span class="days r '+daysCls+'">'+(has(c.now)?f1(c.now):'–')
+          +     (has(c.after)?'<small>→'+f1(c.after)+'</small>':'')+'</span>'
+          +   stg
+          + '</div>';
+    });
+    document.getElementById('gbody').innerHTML = html || '<div class="wait">Nothing counted yet today.</div>';
+    document.getElementById('gridMeta').innerHTML = d.counts.length+' SKUs · <b>'+setUp+'</b> trays to make';
+
+    // Totals footer
+    document.getElementById('gfoot').innerHTML =
+        '<span class="it">Totals</span><span></span>'
+      + '<span class="num r">'+floor+'</span><span class="num r">'+back+'</span>'
+      + '<span class="pull r">'+pull+'</span><span class="make r">'+setUp+'</span>'
+      + '<span></span><span></span>';
+
+    // KPIs
+    document.getElementById('kSetup').textContent = setUp;
+    document.getElementById('kStaged').textContent = stagedTrays;
+    document.getElementById('kStagedOf').textContent = '/ '+setUp;
+    document.getElementById('stagedBar').style.width = (setUp? Math.round(stagedTrays/setUp*100):0)+'%';
+    document.getElementById('kRisk').textContent = below3;
+    document.getElementById('kRiskNote').textContent = crit>0 ? (crit+' critical · below 2 days') : 'below 3 days';
+
+    // Stations
+    var open=0, cap=0, asg=0, strip='';
+    d.stations.forEach(function(s){
+      var isOff = !(n(s.asg)>0 || (s.tech && s.tech.toLowerCase()!=='idle'));
+      cap+=n(s.per); if(!isOff){ open++; asg+=n(s.asg); }
+      strip+='<div class="sc'+(isOff?' off':'')+'"><span class="sn">'+esc(s.no)+'</span>'
+           + '<span class="st">'+esc(s.tech||'—')+'</span><span class="sa">'+(isOff?'·':n(s.asg))+'</span></div>';
+    });
+    strip+='<div class="sc sum"><span class="sn">Σ</span><span class="st">Total assigned</span>'
+         + '<span class="sa">'+asg+'<u> / '+cap+'</u></span></div>';
+    document.getElementById('strip').innerHTML = strip;
+    document.getElementById('stMeta').innerHTML = open+' open · <b>'+asg+'/'+cap+'</b> trays';
+  }
+
+  function setSync(cls,msg){ var e=document.getElementById('sync'); e.className='live '+cls; e.textContent=msg; }
+  function timeStr(d){ return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+  async function pull(){
+    setSync('load','Refreshing…');
+    try{
+      var url = FEED_URL + (FEED_URL.indexOf('?')>-1?'&':'?') + 'cachebust=' + Date.now();
+      var res = await fetch(url);
+      if(!res.ok) throw new Error('http '+res.status);
+      var txt = await res.text();
+      if(/^error,/i.test(txt.trim())){
+        setSync('err','Feed not connected yet');
+        document.getElementById('gbody').innerHTML =
+          '<div class="wait">Connect the Prefill Production Plan on live, then this fills in:<br>'
+          + 'setSourceSheetId(\'prefill\', &lt;workbook id&gt;)</div>';
+        document.getElementById('gfoot').innerHTML='';
+        return;
+      }
+      render(parsePrefill(parseCSV(txt)));
+      setSync('ok','Live · updated '+timeStr(new Date())+' · every '+Math.round(REFRESH_MS/60000)+' min');
+    }catch(e){
+      setSync('err','Couldn’t reach the feed — showing last data');
+    }
+  }
+
+  function tick(){
+    var d=new Date();
+    document.getElementById('clk').textContent=timeStr(d);
+    document.getElementById('date').textContent=d.toLocaleDateString(undefined,{day:'numeric',month:'short'});
+  }
+  tick(); setInterval(tick,30000);
+  pull(); setInterval(pull,REFRESH_MS);
+</script>
+</body>
+</html>
