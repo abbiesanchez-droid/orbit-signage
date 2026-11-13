@@ -73,6 +73,12 @@
   .num{font-size:1.95cqmin;font-weight:600;color:#c9d3ee}
   .num.z{color:var(--dim)}
   .pull{font-size:1.95cqmin;font-weight:600;color:#b9c4e4}
+  .pull.z{color:var(--dim)}
+  .lvl{display:inline-block;padding:.2cqmin .85cqmin;border-radius:.7cqmin;font-size:1.5cqmin;font-weight:700;letter-spacing:.02em;line-height:1.4}
+  .lvl.full{background:rgba(52,211,153,.14);color:var(--ok)}
+  .lvl.mid{background:rgba(148,163,184,.16);color:#d3dbec}
+  .lvl.low{background:rgba(251,191,36,.15);color:var(--warn)}
+  .lvl.empty{background:rgba(255,120,130,.16);color:#ff95a2}
   .make{font-size:2.5cqmin;font-weight:800;color:#fff}
   .make.z{font-size:1.9cqmin;color:var(--dim);font-weight:600}
   .days{font-size:2.05cqmin;font-weight:800}
@@ -202,6 +208,13 @@
   function has(v){return v!=='' && v!=null;}
   function f1(v){return has(v)?(Math.round(n(v)*10)/10).toFixed(1):'';}
   function risk(now){ if(!has(now)) return 'ok'; var d=n(now); return d<2?'bad':(d<3?'warn':'ok'); }
+  /* Pull wall is a rack-fill level (Full/Most/Half/Low/Empty), not a count — colour by how depleted it is. */
+  function pullLvl(v){ var s=String(v==null?'':v).toLowerCase();
+    if(!s) return '';
+    if(s.indexOf('empty')>=0) return 'empty';
+    if(s.indexOf('low')>=0) return 'low';
+    if(s.indexOf('full')>=0||s.indexOf('most')>=0) return 'full';
+    return 'mid'; }
   function drugOf(item){ return String(item).replace(/\s*×.*$/,'').trim()||String(item); }
 
   // RFC-4180-ish CSV parser (same approach as the chewable board).
@@ -236,12 +249,11 @@
     document.getElementById('day').textContent = d.meta.day || '—';
 
     // Aggregates
-    var setUp=0, floor=0, back=0, pull=0, stagedTrays=0, below3=0, crit=0;
+    var setUp=0, floor=0, back=0, stagedTrays=0, below3=0, crit=0;
     d.counts.forEach(function(c){
       if(has(c.setup)) setUp+=n(c.setup);
       if(has(c.floor)) floor+=n(c.floor);
       if(has(c.back))  back +=n(c.back);
-      if(has(c.pull))  pull +=n(c.pull);
       if(c.staged && has(c.setup)) stagedTrays+=n(c.setup);
       if(has(c.now)){ var dd=n(c.now); if(dd<3) below3++; if(dd<2) crit++; }
     });
@@ -259,7 +271,7 @@
           +   '<span class="pk r">×'+esc(c.qty)+'</span>'
           +   '<span class="num r'+(n(c.floor)?'':' z')+'">'+(has(c.floor)?n(c.floor):'–')+'</span>'
           +   '<span class="num r'+(n(c.back)?'':' z')+'">'+(n(c.back)?n(c.back):'–')+'</span>'
-          +   '<span class="pull r'+(n(c.pull)?'':' z')+'">'+(n(c.pull)?n(c.pull):'–')+'</span>'
+          +   '<span class="pull r'+(has(c.pull)?'':' z')+'">'+(has(c.pull)?'<i class="lvl '+pullLvl(c.pull)+'">'+esc(String(c.pull))+'</i>':'–')+'</span>'
           +   '<span class="make r'+(hasMk?'':' z')+'">'+(hasMk?mk:'–')+'</span>'
           +   '<span class="days r '+daysCls+'">'+(has(c.now)?f1(c.now):'–')
           +     (has(c.after)?'<small>→'+f1(c.after)+'</small>':'')+'</span>'
@@ -273,7 +285,7 @@
     document.getElementById('gfoot').innerHTML =
         '<span class="it">Totals</span><span></span>'
       + '<span class="num r">'+floor+'</span><span class="num r">'+back+'</span>'
-      + '<span class="pull r">'+pull+'</span><span class="make r">'+setUp+'</span>'
+      + '<span class="pull r"></span><span class="make r">'+setUp+'</span>'
       + '<span></span><span></span>';
 
     // KPIs
