@@ -4,196 +4,199 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ZipHealth — Prefill Signage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* Brand ramp (heliosx.com): violet -> blue -> azure -> mint. Accent only. */
-    --g1:#6b2bd6; --g2:#1f4bff; --g3:#2f7bff; --g4:#17c0c0;
-    --ground:#070b16; --ground2:#0d1426;
-    --surface:#111a2f; --surface2:#0e1730;
-    --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.045);
-    --ink:#f2f5fc; --muted:#9fabca; --dim:#66728f;
-    --ok:#33d6a0; --warn:#ffbe3d; --bad:#ff6d7f; --accent:#7ea2ff;
-    --rad:1.3cqmin;
+    color-scheme:light;
+    /* ZipHealth brand — same tokens as the chewable/compounding signage board (Board.html) */
+    --navy:#003f82; --navy-deep:#002a57; --ink:#0f2f4e; --muted:#3f6089; --faint:#6d88a8;
+    --accent:#fa6609; --accent-ink:#c8500a; --accent-soft:#fdeadb; --accent-deep:#a8430a;
+    --zh:#2772db; --zh-ink:#1b5bb5; --zh-soft:#e6eefb;
+    --good:#12813f; --good-ink:#0f6e36; --good-soft:#e2f3e9;
+    --warn:#b5730a; --warn-soft:#fdeedd;
+    --bad:#c0263a; --bad-soft:#fde7ea;
+    --bg:#e8eef7; --card:#ffffff; --card-2:#f3f7fc;
+    --line:#d4dfee; --line-2:#e7eef7; --band:#003f82; --stage:#02162b;
+    --sans:"Roboto",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+    --rad:1.1cqmin;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;overflow:hidden;background:#02040a;color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;
-    font-variant-numeric:tabular-nums}
-  body{display:flex;align-items:center;justify-content:center}
+  html,body{height:100%;overflow:hidden}
+  body{background:var(--stage);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+    font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center}
 
   /* One 16:9 board, contained to the viewport so OptiSigns letterboxes rather than clips. */
   .screen{position:relative;container-type:size;
     width:min(100vw,177.78vh);height:min(56.25vw,100vh);
-    background:
-      radial-gradient(120% 90% at 100% -10%, rgba(31,75,255,.15), transparent 52%),
-      radial-gradient(110% 90% at -8% 115%, rgba(107,43,214,.12), transparent 55%),
-      linear-gradient(168deg,var(--ground),var(--ground2));
+    background:var(--bg);color:var(--ink);line-height:1.3;
     display:flex;flex-direction:column;overflow:hidden}
-  .screen::before{content:"";position:absolute;inset:0 0 auto 0;height:.45cqmin;
-    background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3),var(--g4))}
 
-  .pad{flex:1;display:flex;flex-direction:column;gap:1.8cqmin;padding:2.4cqmin 2.8cqmin 2cqmin;min-height:0}
+  /* Brand band — navy with the ZipHealth logo and an orange hairline, matching the chewable board. */
+  .band{flex:none;background:var(--band);color:#fff;border-bottom:.4cqmin solid var(--accent);
+    display:flex;align-items:center;justify-content:space-between;gap:2cqmin;padding:1.5cqmin 2.6cqmin}
+  .band-l{display:flex;flex-direction:column;gap:.55cqmin;min-width:0}
+  .zh-logo{height:3.4cqmin;width:auto;display:block;fill:currentColor;color:#fff}
+  .band-sub{font-size:1.4cqmin;font-weight:600;color:rgba(255,255,255,.82);
+    text-transform:uppercase;letter-spacing:.08em}
+  .band-r{display:flex;flex-direction:column;align-items:flex-end;gap:.35cqmin;text-align:right}
+  .clock{font-weight:900;font-size:3cqmin;line-height:.95;letter-spacing:-.02em;color:#fff}
+  .band-sub2{font-size:1.4cqmin;font-weight:600;color:rgba(255,255,255,.78)}
+  .helios{font-size:1cqmin;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55)}
 
-  /* Header */
-  .top{display:flex;align-items:center;justify-content:space-between;flex:none}
-  .brand{display:flex;align-items:center;gap:1.4cqmin}
-  .mark{width:4cqmin;height:4cqmin;border-radius:50%;flex:none;
-    background:conic-gradient(from 210deg,var(--g1),var(--g2),var(--g3),var(--g4),var(--g1));
-    box-shadow:0 0 1.2cqmin rgba(47,123,255,.45);position:relative}
-  .mark::after{content:"";position:absolute;inset:30%;border-radius:50%;background:var(--ground2)}
-  .wm{font-size:3cqmin;font-weight:800;letter-spacing:-.01em;line-height:1}
-  .sub{font-size:1.5cqmin;color:var(--muted);font-weight:600;margin-top:.4cqmin}
-  .when{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:.3cqmin}
-  .day{font-size:3.4cqmin;font-weight:800;line-height:1;letter-spacing:-.01em;
-    background:linear-gradient(90deg,#abc0ff,#fff 80%);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .clock{font-size:1.75cqmin;color:var(--muted);font-weight:600}
+  .pad{flex:1;display:flex;flex-direction:column;gap:1.8cqmin;padding:1.8cqmin 2.6cqmin 2cqmin;min-height:0}
 
   /* Main split: dense grid (left) + side column (right) */
   .main{flex:1;display:grid;grid-template-columns:2.05fr 1fr;gap:1.8cqmin;min-height:0}
-  .panel{background:linear-gradient(180deg,var(--surface),var(--surface2));border:1px solid var(--line);
-    border-radius:var(--rad);display:flex;flex-direction:column;min-height:0}
-  .ph{display:flex;align-items:baseline;justify-content:space-between;flex:none;padding:1.6cqmin 1.8cqmin 1.2cqmin}
-  .ph h2{font-size:2.2cqmin;font-weight:800}
-  .ph .meta{font-size:1.6cqmin;color:var(--dim);font-weight:700}
-  .ph .meta b{color:var(--accent)}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);
+    box-shadow:0 1px 2px rgba(5,40,80,.05),0 .8cqmin 1.6cqmin -1cqmin rgba(5,40,80,.14);
+    display:flex;flex-direction:column;min-height:0}
+  .ph{display:flex;align-items:baseline;justify-content:space-between;flex:none;padding:1.5cqmin 1.8cqmin 1.1cqmin}
+  .ph h2{font-size:2.1cqmin;font-weight:800;color:var(--navy);letter-spacing:-.015em}
+  .ph .meta{font-size:1.55cqmin;color:var(--faint);font-weight:700}
+  .ph .meta b{color:var(--accent-ink)}
 
   /* Production grid */
-  .grid{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 1.8cqmin 1.4cqmin}
+  .grid{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 1.8cqmin 1.3cqmin}
   .gcols{display:grid;grid-template-columns:minmax(0,1.85fr) .72fr .78fr .62fr .72fr .85fr 1.3fr .5fr;align-items:center;gap:1cqmin}
-  .ghead{font-size:1.3cqmin;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;font-weight:700;
-    padding:0 .8cqmin .9cqmin;border-bottom:1px solid var(--line);flex:none}
+  .ghead{font-size:1.25cqmin;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;font-weight:800;
+    padding:0 .8cqmin .85cqmin;border-bottom:1px solid var(--line);flex:none}
   .gbody{flex:1;display:grid;grid-auto-rows:1fr;min-height:0}
-  .grow{padding:0 .8cqmin;border-bottom:1px solid var(--line2)}
-  .grow.gstart{box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+  .grow{padding:0 .8cqmin;border-bottom:1px solid var(--line-2)}
+  .grow.gstart{box-shadow:inset 0 1px 0 rgba(5,40,80,.06)}
   .r{text-align:right}  .c{text-align:center}
 
-  .it{font-size:2cqmin;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.05}
-  .it.cont{color:var(--dim);font-weight:600}
-  .pk{font-size:1.75cqmin;color:#c3cde8;font-weight:700}
-  .num{font-size:1.95cqmin;font-weight:600;color:#c9d3ee}
-  .num.z{color:var(--dim)}
-  .pull{font-size:1.95cqmin;font-weight:600;color:#b9c4e4}
-  .pull.z{color:var(--dim)}
-  .lvl{display:inline-block;padding:.2cqmin .85cqmin;border-radius:.7cqmin;font-size:1.5cqmin;font-weight:700;letter-spacing:.02em;line-height:1.4}
-  .lvl.full{background:rgba(52,211,153,.14);color:var(--ok)}
-  .lvl.mid{background:rgba(148,163,184,.16);color:#d3dbec}
-  .lvl.low{background:rgba(251,191,36,.15);color:var(--warn)}
-  .lvl.empty{background:rgba(255,120,130,.16);color:#ff95a2}
-  .make{font-size:2.5cqmin;font-weight:800;color:#fff}
-  .make.z{font-size:1.9cqmin;color:var(--dim);font-weight:600}
-  .days{font-size:2.05cqmin;font-weight:800}
-  .days small{font-size:1.35cqmin;font-weight:600;color:var(--dim);margin-left:.45cqmin}
-  .days.ok{color:#c9d3ee} .days.warn{color:var(--warn)} .days.bad{color:#ff95a2}
+  .it{font-size:1.95cqmin;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.05;color:var(--ink)}
+  .it.cont{color:var(--muted);font-weight:600}
+  .pk{font-size:1.7cqmin;color:var(--muted);font-weight:700}
+  .num{font-size:1.9cqmin;font-weight:700;color:var(--ink)}
+  .num.z{color:var(--faint);font-weight:600}
+  .pull{font-size:1.9cqmin;font-weight:600;color:var(--muted)}
+  .pull.z{color:var(--faint)}
+  .lvl{display:inline-block;padding:.2cqmin .85cqmin;border-radius:.7cqmin;font-size:1.45cqmin;font-weight:800;letter-spacing:.02em;line-height:1.4}
+  .lvl.full{background:var(--good-soft);color:var(--good-ink)}
+  .lvl.mid{background:#eaf1f9;color:var(--muted)}
+  .lvl.low{background:var(--warn-soft);color:var(--warn)}
+  .lvl.empty{background:var(--bad-soft);color:var(--bad)}
+  .make{font-size:2.5cqmin;font-weight:900;color:var(--navy)}
+  .make.z{font-size:1.85cqmin;color:var(--faint);font-weight:600}
+  .days{font-size:2cqmin;font-weight:800}
+  .days small{font-size:1.3cqmin;font-weight:600;color:var(--faint);margin-left:.45cqmin}
+  .days.ok{color:var(--ink)} .days.warn{color:var(--warn)} .days.bad{color:var(--bad)}
   .stg{font-size:2cqmin;font-weight:800}
-  .stg.y{color:var(--ok)} .stg.n{color:var(--dim)} .stg.none{color:transparent}
+  .stg.y{color:var(--good-ink)} .stg.n{color:var(--faint)} .stg.none{color:transparent}
 
-  .gfoot{flex:none;border-top:2px solid var(--line);padding:1.1cqmin .8cqmin 0;margin-top:.2cqmin}
-  .gfoot .it{font-size:1.6cqmin;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
-  .gfoot .num,.gfoot .pull{font-size:2cqmin;font-weight:800;color:var(--ink)}
-  .gfoot .make{font-size:2.6cqmin}
+  .gfoot{flex:none;border-top:2px solid var(--line);padding:1cqmin .8cqmin 0;margin-top:.2cqmin}
+  .gfoot .it{font-size:1.5cqmin;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+  .gfoot .num,.gfoot .pull{font-size:1.95cqmin;font-weight:900;color:var(--ink)}
+  .gfoot .make{font-size:2.6cqmin;color:var(--navy)}
 
   /* Side column */
   .side{display:flex;flex-direction:column;gap:1.6cqmin;min-height:0}
-  .kpi{background:linear-gradient(180deg,var(--surface),var(--surface2));border:1px solid var(--line);
-    border-radius:var(--rad);padding:1.5cqmin 1.8cqmin;position:relative;overflow:hidden;flex:none}
-  .kpi .l{font-size:1.55cqmin;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
-  .kpi .v{font-size:4.6cqmin;font-weight:800;line-height:1;display:flex;align-items:baseline;gap:.6cqmin;margin-top:.4cqmin}
-  .kpi .v u{font-size:1.75cqmin;font-weight:600;color:var(--muted);text-decoration:none}
-  .kpi.hero{background:radial-gradient(120% 140% at 0 0, rgba(47,123,255,.2), transparent 60%),linear-gradient(180deg,var(--surface),var(--surface2))}
-  .kpi.hero .v{font-size:6.4cqmin;color:#fff}
-  .kpi.hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.5cqmin;background:linear-gradient(180deg,var(--g2),var(--g4))}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);
+    box-shadow:0 1px 2px rgba(5,40,80,.05),0 .8cqmin 1.6cqmin -1cqmin rgba(5,40,80,.14);
+    padding:1.4cqmin 1.8cqmin;position:relative;overflow:hidden;flex:none}
+  .kpi .l{font-size:1.5cqmin;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+  .kpi .v{font-size:4.6cqmin;font-weight:900;line-height:1;display:flex;align-items:baseline;gap:.6cqmin;margin-top:.4cqmin;color:var(--ink)}
+  .kpi .v u{font-size:1.7cqmin;font-weight:600;color:var(--faint);text-decoration:none}
+  .kpi.hero{background:linear-gradient(180deg,#ffffff,#f3f7fc)}
+  .kpi.hero .v{font-size:6.2cqmin;color:var(--navy)}
+  .kpi.hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.5cqmin;background:var(--accent)}
   .kpi2{display:grid;grid-template-columns:1fr 1fr;gap:1.6cqmin;flex:none}
-  .kpi .note{font-size:1.4cqmin;color:var(--dim);font-weight:600;margin-top:.3cqmin}
-  .kpi.risk .v{color:#ffce7d}
-  .bar{height:.8cqmin;border-radius:1cqmin;background:rgba(255,255,255,.08);overflow:hidden;margin-top:.7cqmin}
-  .bar i{display:block;height:100%;border-radius:1cqmin;background:linear-gradient(90deg,var(--ok),#7fe9c6)}
+  .kpi .note{font-size:1.35cqmin;color:var(--faint);font-weight:600;margin-top:.3cqmin}
+  .kpi.risk .v{color:var(--accent-ink)}
+  .bar{height:.8cqmin;border-radius:1cqmin;background:var(--line-2);overflow:hidden;margin-top:.7cqmin}
+  .bar i{display:block;height:100%;border-radius:1cqmin;background:var(--good)}
 
   .stations{flex:1;min-height:0}
-  .stwrap{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.9cqmin;align-content:start;padding:0 1.8cqmin 1.6cqmin;min-height:0;overflow:hidden}
+  .stwrap{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.9cqmin;align-content:start;padding:0 1.8cqmin 1.5cqmin;min-height:0;overflow:hidden}
   .sc{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.8cqmin;
-    background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:.8cqmin;padding:.85cqmin 1.1cqmin}
+    background:var(--card-2);border:1px solid var(--line-2);border-radius:.8cqmin;padding:.8cqmin 1.1cqmin}
   .sc .sn{width:2.6cqmin;height:2.6cqmin;border-radius:.6cqmin;display:grid;place-items:center;
-    background:rgba(47,123,255,.18);color:#bcd0ff;font-weight:800;font-size:1.5cqmin;flex:none}
-  .sc .st{font-size:1.85cqmin;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#dde5f8}
-  .sc .sa{font-size:2cqmin;font-weight:800}
-  .sc.off{opacity:.36} .sc.off .sa{color:var(--dim)}
-  .sc.sum{grid-column:1 / -1;background:rgba(31,75,255,.12);border-color:rgba(90,140,255,.3)}
-  .sc.sum .sn{background:transparent;color:var(--muted)}
-  .sc.sum .sa u{font-size:1.5cqmin;color:var(--muted);font-weight:600;text-decoration:none}
+    background:var(--zh-soft);color:var(--zh-ink);font-weight:900;font-size:1.45cqmin;flex:none}
+  .sc .st{font-size:1.8cqmin;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+  .sc .sa{font-size:1.95cqmin;font-weight:900;color:var(--navy)}
+  .sc.off{opacity:.5} .sc.off .sa{color:var(--faint)}
+  .sc.sum{grid-column:1 / -1;background:var(--navy);border-color:var(--navy)}
+  .sc.sum .sn{background:rgba(255,255,255,.14);color:#fff}
+  .sc.sum .st{color:#fff}
+  .sc.sum .sa{color:#fff}
+  .sc.sum .sa u{font-size:1.45cqmin;color:rgba(255,255,255,.7);font-weight:600;text-decoration:none}
 
-  .foot{display:flex;align-items:center;justify-content:space-between;color:var(--dim);font-size:1.45cqmin;font-weight:600;flex:none}
-  .live{display:inline-flex;align-items:center;gap:.6cqmin}
-  .live::before{content:"";width:.9cqmin;height:.9cqmin;border-radius:50%;background:var(--dim)}
-  .live.ok{color:var(--ok)} .live.ok::before{background:var(--ok);box-shadow:0 0 .7cqmin var(--ok)}
-  .live.load{color:var(--warn)} .live.load::before{background:var(--warn)}
-  .live.err{color:#ff95a2} .live.err::before{background:var(--bad)}
+  .foot{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:1.4cqmin;font-weight:600;flex:none}
+  .live{display:inline-flex;align-items:center;gap:.6cqmin;font-weight:700}
+  .live::before{content:"";width:.9cqmin;height:.9cqmin;border-radius:50%;background:var(--faint)}
+  .live.ok{color:var(--good-ink)} .live.ok::before{background:var(--good)}
+  .live.load{color:var(--accent-ink)} .live.load::before{background:var(--accent)}
+  .live.err{color:var(--bad)} .live.err::before{background:var(--bad)}
 
-  .wait{flex:1;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:2cqmin;font-weight:600;text-align:center;padding:3cqmin;line-height:1.5}
+  .wait{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1.9cqmin;font-weight:600;text-align:center;padding:3cqmin;line-height:1.5}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="screen"><div class="pad">
+<div class="screen">
 
-  <header class="top">
-    <div class="brand">
-      <div class="mark"></div>
-      <div>
-        <div class="wm">Prefills</div>
-        <div class="sub">Morning setup · vial tray production</div>
-      </div>
+  <header class="band">
+    <div class="band-l">
+      <svg class="zh-logo" role="img" aria-label="ZipHealth" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 157 40"><path d="M20.502 36.303c-9.012 0-16.32-7.298-16.32-16.303S11.49 3.697 20.502 3.697 36.822 10.995 36.822 20s-7.308 16.303-16.32 16.303M20.359 0C9.302 0 .335 8.953.335 20s8.967 20 20.024 20 20.025-8.953 20.025-20S31.417 0 20.359 0"/><path d="M32.084 16.532v6.936H23.83v8.257h-6.935v-8.257H8.637v-6.936h8.258V8.275h6.936v8.257zM47.36 25.854l9.52-11.384H48.11v-3.28h13.968v3.081l-9.52 11.385h9.767v3.283H47.361zM64.088 16.087h3.53v12.852h-3.53zm3.53-1.99h-3.53V11.19h3.53zM84.672 11.19h3.903V18h7.186v-6.81h3.903v17.746H95.76V21.28h-7.186v7.656h-3.903zM110.623 21.134c-.323-1.788-1.092-2.734-2.81-2.734-2.236 0-2.883 1.74-2.932 2.734zm-5.742 2.236c.101 2.237 1.193 3.256 3.158 3.256 1.416 0 2.56-.87 2.783-1.666h3.106c-.995 3.033-3.106 4.323-6.014 4.323-4.052 0-6.564-2.786-6.564-6.761s2.661-6.786 6.564-6.786c4.376 0 6.487 3.68 6.24 7.63h-9.273zM123.994 22.647c-.595.522-1.84.546-2.932.744-1.092.223-2.087.599-2.087 1.889s1.019 1.642 2.163 1.642c2.759 0 2.859-2.188 2.859-2.957v-1.318zm-8.153-2.609c.198-3.304 3.155-4.299 6.038-4.299 2.56 0 5.642.57 5.642 3.656v6.685c0 1.169.125 2.337.449 2.859h-3.579a5 5 0 0 1-.247-1.242c-1.12 1.169-2.759 1.59-4.324 1.59-2.435 0-4.376-1.217-4.376-3.854 0-2.908 2.188-3.604 4.376-3.903 2.164-.323 4.177-.247 4.177-1.69 0-1.517-1.043-1.74-2.285-1.74-1.342 0-2.212.547-2.337 1.938zM133.142 11.19h-3.531v17.746h3.531zM140.147 16.087h2.584v2.362h-2.584v6.365c0 1.193.299 1.492 1.492 1.492.372 0 .72-.024 1.092-.1v2.757c-.598.101-1.367.126-2.062.126-2.164 0-4.052-.498-4.052-3.058V18.45h-2.14v-2.362h2.14v-3.854h3.53zM144.175 11.19h3.53v6.685h.077c.894-1.44 2.435-2.136 3.753-2.136 3.753 0 4.699 2.111 4.699 5.294v7.903h-3.531v-7.26c0-2.11-.622-3.158-2.26-3.158-1.913 0-2.734 1.068-2.734 3.68v6.738h-3.531V11.19zM78.015 25.45q-.763 1.067-2.084 1.068c-.95 0-1.676-.355-2.187-1.068q-.762-.964-.762-2.893-.001-2.082.713-3.047.762-1.067 2.135-1.068c.915 0 1.677.355 2.188 1.067.512.714.762 1.726.762 3.047q0 1.831-.762 2.894m2.745-8.125q-.76-.913-2.06-1.398a7.4 7.4 0 0 0-2.567-.484 8.4 8.4 0 0 0-4.525 1.294q-2.083 1.295-2.083 4.849v11.297h3.457v-5.405c.407.713.95 1.235 1.628 1.576q.967.455 2.237.456c1.59 0 2.897-.644 3.913-1.93q1.528-1.983 1.527-5.18c0-2.132-.508-3.757-1.527-5.078"/></svg>
+      <div class="band-sub">Prefills &middot; Morning setup &middot; vial tray production</div>
     </div>
-    <div class="when">
-      <div class="day" id="day">—</div>
-      <div class="clock"><span id="clk">--:--</span> · <span id="date"></span></div>
+    <div class="band-r">
+      <div class="clock"><span id="clk">--:--</span></div>
+      <div class="band-sub2"><span id="day">&mdash;</span> &middot; <span id="date"></span></div>
+      <div class="helios">A HeliosX company</div>
     </div>
   </header>
 
-  <section class="main">
-    <!-- Dense production grid -->
-    <div class="panel">
-      <div class="ph"><h2>Morning count</h2><span class="meta" id="gridMeta"></span></div>
-      <div class="grid">
-        <div class="gcols ghead">
-          <span>Item</span><span class="r">Pack</span><span class="r">On floor</span><span class="r">Back</span>
-          <span class="r">Pull</span><span class="r">Make</span><span class="r">Days cover</span><span class="c">Set</span>
-        </div>
-        <div class="gbody" id="gbody"><div class="wait">Connecting to the feed…</div></div>
-        <div class="gcols gfoot" id="gfoot"></div>
-      </div>
-    </div>
-
-    <!-- Side column -->
-    <aside class="side">
-      <div class="kpi hero">
-        <div class="l">Set up today</div>
-        <div class="v"><span id="kSetup">—</span><u>trays to make</u></div>
-      </div>
-      <div class="kpi2">
-        <div class="kpi">
-          <div class="l">Staged ready</div>
-          <div class="v"><span id="kStaged">—</span><u id="kStagedOf"></u></div>
-          <div class="bar"><i id="stagedBar" style="width:0"></i></div>
-        </div>
-        <div class="kpi risk">
-          <div class="l">Running low</div>
-          <div class="v"><span id="kRisk">—</span><u>SKUs</u></div>
-          <div class="note" id="kRiskNote">below 3 days</div>
+  <div class="pad">
+    <section class="main">
+      <!-- Dense production grid -->
+      <div class="panel">
+        <div class="ph"><h2>Morning count</h2><span class="meta" id="gridMeta"></span></div>
+        <div class="grid">
+          <div class="gcols ghead">
+            <span>Item</span><span class="r">Pack</span><span class="r">On floor</span><span class="r">Back</span>
+            <span class="r">Pull</span><span class="r">Make</span><span class="r">Days cover</span><span class="c">Set</span>
+          </div>
+          <div class="gbody" id="gbody"><div class="wait">Connecting to the feed&hellip;</div></div>
+          <div class="gcols gfoot" id="gfoot"></div>
         </div>
       </div>
-      <div class="panel stations">
-        <div class="ph"><h2>Stations</h2><span class="meta" id="stMeta"></span></div>
-        <div class="stwrap" id="strip"></div>
-      </div>
-    </aside>
-  </section>
 
-  <footer class="foot">
-    <span>Source · Prefill Production Plan — Start Here &nbsp;·&nbsp; keep ≥ 3 days of stock</span>
-    <span class="live load" id="sync">Connecting…</span>
-  </footer>
+      <!-- Side column -->
+      <aside class="side">
+        <div class="kpi hero">
+          <div class="l">Set up today</div>
+          <div class="v"><span id="kSetup">&mdash;</span><u>trays to make</u></div>
+        </div>
+        <div class="kpi2">
+          <div class="kpi">
+            <div class="l">Staged ready</div>
+            <div class="v"><span id="kStaged">&mdash;</span><u id="kStagedOf"></u></div>
+            <div class="bar"><i id="stagedBar" style="width:0"></i></div>
+          </div>
+          <div class="kpi risk">
+            <div class="l">Running low</div>
+            <div class="v"><span id="kRisk">&mdash;</span><u>SKUs</u></div>
+            <div class="note" id="kRiskNote">below 3 days</div>
+          </div>
+        </div>
+        <div class="panel stations">
+          <div class="ph"><h2>Stations</h2><span class="meta" id="stMeta"></span></div>
+          <div class="stwrap" id="strip"></div>
+        </div>
+      </aside>
+    </section>
 
-</div></div>
+    <footer class="foot">
+      <span>Source &middot; Prefill Production Plan &mdash; Start Here &nbsp;&middot;&nbsp; keep &ge; 3 days of stock</span>
+      <span class="live load" id="sync">Connecting&hellip;</span>
+    </footer>
+  </div>
+
+</div>
 
 <script>
   // Public signage feed (same base the chewable board polls). ?feed=prefill returns the section-tagged
@@ -215,7 +218,6 @@
     if(s.indexOf('low')>=0) return 'low';
     if(s.indexOf('full')>=0||s.indexOf('most')>=0) return 'full';
     return 'mid'; }
-  function drugOf(item){ return String(item).replace(/\s*×.*$/,'').trim()||String(item); }
 
   // RFC-4180-ish CSV parser (same approach as the chewable board).
   function parseCSV(text){
